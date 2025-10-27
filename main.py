@@ -5,6 +5,8 @@ import hydra
 import random
 
 
+import torch
+
 
 from utils import seed_everything
 from models import make_model
@@ -44,6 +46,26 @@ def preparation(cfg):
     if not os.path.isdir(cfg.log.result_path):
         os.makedirs(cfg.log.result_path)
 
+
+
+def save_model(model, optimizer, opt, epoch, save_file):
+    print('==> Saving...'+save_file)
+    if opt.method in ["cclis-pcgrad"]:
+        state = {
+        'opt': opt,
+        'model': model.state_dict(),
+        'optimizer': optimizer._optim.state_dict(),
+        'epoch': epoch,
+    }
+    else:
+        state = {
+            'opt': opt,
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'epoch': epoch,
+        }
+    torch.save(state, save_file)
+    del state
 
 
 @hydra.main(config_path='configs/default/', config_name='default', version_base=None)
@@ -124,12 +146,22 @@ def main(cfg):
             train(model=model, criterion=criterion, optimizer=optimizer,
                   scheduler=scheduler, train_loader=train_loader, epoch=epoch, cfg=cfg)
 
+            # 学習率の調整
+            scheduler.step()
+
+            # 学習途中のパラメータを保存
+            dir_path = f"{cfg.log.model_path}/task{cfg.continual.target_task:02d}"
+            file_path = f"{dir_path}/model_epoch{epoch:03d}.pth"
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            save_model(model, optimizer, cfg, cfg.optimizer.train.epochs, file_path)
 
 
 
-
-
-
+        # 保存（opt.model_path）
+        file_path = f"{cfg.log.model_path}/model_{cfg.continual.target_task:02d}.pth"
+        # save_model(model, method_tools["optimizer"], opt, opt.epochs, file_path)
+        save_model(model, optimizer, cfg, cfg.optimizer.train.epochs, file_path)
 
 
 

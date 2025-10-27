@@ -59,7 +59,7 @@ log:
   result_path: null
   save_freq: 0.005
   save_freq_mints: 20
-  print_freq: 20
+  print_freq: 30
   resume: true
 ddp:
   local_rank: null
