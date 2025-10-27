@@ -98,6 +98,6 @@ class ResNet(nn.Module):
     
 
 
-def ResNet18(task_num, nclasses, nf=32, final_feat_sz=2, include_head=True):
+def ResNet18(task_num, nclasses, nf=32, final_feat_sz=2, include_head=True, single_head=False, total_classes=None):
     return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf, task_num=task_num, include_head=include_head,
                   final_feat_sz=final_feat_sz)

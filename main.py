@@ -8,7 +8,12 @@ import random
 
 from utils import seed_everything
 from models import make_model
-
+from losses import make_criterion
+from optimizers import make_optimizer, make_scheduler
+from augmentations import make_augmentation
+from datasets import set_buffer, make_dataset
+from dataloaders import make_dataloader
+from train import train
 
 
 
@@ -60,12 +65,70 @@ def main(cfg):
     preparation(cfg)
 
 
-
-
     # ===========================================
     # modelの作成
     # ===========================================
     model = make_model(cfg)
+
+
+    # ===========================================
+    # 損失関数の作成
+    # ===========================================
+    criterion = make_criterion(cfg)
+
+
+    # バッファ内データのインデックス
+    replay_indices = None
+
+
+    # ===========================================
+    # タスクを順番に処理
+    # ===========================================
+    n_task = cfg.continual.n_task
+    for taskid in range(n_task):
+
+        print(f"=== Training task {taskid}/{n_task-1} ===")
+        cfg.continual.target_task = taskid
+
+        # ===========================================
+        # Optimizer の作成
+        # ===========================================
+        optimizer = make_optimizer(cfg, model)
+
+
+        # ===========================================
+        # データローダーの作成
+        # ===========================================
+        replay_indices = set_buffer(cfg=cfg, prev_indices=replay_indices)
+        train_augmentation, test_augmentation = make_augmentation(cfg)
+        train_dataset, test_dataset = make_dataset(cfg=cfg, replay_indices=replay_indices,
+                                                   train_augmentation=train_augmentation,
+                                                   test_augmentation=test_augmentation)
+        
+        train_loader, test_loader = make_dataloader(cfg, train_dataset, test_dataset)
+
+
+        # ===========================================
+        # scheduler の作成
+        # ===========================================
+        scheduler = make_scheduler(cfg, optimizer)
+        
+
+        # ===========================================
+        # 学習を実行
+        # ===========================================
+        epochs = cfg.optimizer.train.epochs
+        for epoch in range(epochs):
+            
+            # model, criterion, optimizer, scheduler, train_loader, epoch, cfg
+            train(model=model, criterion=criterion, optimizer=optimizer,
+                  scheduler=scheduler, train_loader=train_loader, epoch=epoch, cfg=cfg)
+
+
+
+
+
+
 
 
 

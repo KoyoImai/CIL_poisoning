@@ -1,0 +1,75 @@
+method:
+  name: finetune
+model:
+  type: resnet18
+dataset:
+  type: cifar100
+  num_classes: 100
+  data_folder: /home/kouyou/datasets/
+  size: 32
+  drop_last: true
+  start_index: 0
+  sharding: interleave
+optimizer:
+  train:
+    learning_rate: 0.1
+    weight_decay: 0.0001
+    momentum: 0.9
+    eta: 0.005
+    batch_size: 16
+    start_epoch: 0
+    epochs: 20
+scheduler:
+  train:
+    milestones:
+    - 16
+    gamma: 0.1
+continual:
+  n_cls: 100
+  n_task: 10
+  cls_per_task: 10
+  buffer_type: none
+  buffer_size: 0
+  target_task: null
+linear:
+  dataset: cifar100
+  task_id: []
+  n_task: 100
+  num_workers: 10
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule:
+    - 60
+    - 80
+    eta: 0.005
+    cos: true
+log:
+  name: null
+  base: baseline
+  model: model
+  result: result
+  base_path: null
+  model_path: null
+  explog_path: null
+  mem_path: null
+  result_path: null
+  save_freq: 0.005
+  save_freq_mints: 20
+  print_freq: 20
+  resume: true
+ddp:
+  local_rank: null
+  use_ddp: null
+  world_size: null
+amp:
+  use_amp: true
+  dtype: fp16
+  grad_scaler: true
+seed: 777
+date: 20251022
+workers: 64
+debug: false

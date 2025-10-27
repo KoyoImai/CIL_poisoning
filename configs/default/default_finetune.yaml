@@ -2,12 +2,12 @@
 
 hydra:
   run:
-    dir: outputs/er_debug
+    dir: outputs/finetune_debug
     
 
 # 手法名
 method: 
-  name: "er"
+  name: "finetune"
 
 
 model:
@@ -27,16 +27,15 @@ dataset:
 
 optimizer:
   train:
-    learning_rate: 1e-2
+    learning_rate: 0.1
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
     batch_size: 16
     start_epoch: 0
     epochs: 20
-    scheduler_type: "cos"
-    scheduler_exit_decay: 0
-  
+
+
 scheduler:
   train:
     milestones: [16]
@@ -47,14 +46,14 @@ continual:
   n_cls: 100
   n_task: 10
   cls_per_task: 10
-  buffer_type: "minred"
-  buffer_size: 500
+  buffer_type: "none"
+  buffer_size: 0
   target_task: 
 
 
 
 linear:
-  dataset: "imagenet21k"
+  dataset: "cifar100"
   task_id: []
   n_task: 100
   num_workers: 10

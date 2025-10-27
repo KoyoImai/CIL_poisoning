@@ -10,4 +10,4 @@ export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=1200
 export CUDA_LAUNCH_BLOCKING=1
 
 
-python main.py --config-path ./configs/default/ --config-name default_er
+python main.py --config-path ./configs/default/ --config-name default_finetune
