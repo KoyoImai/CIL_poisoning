@@ -40,12 +40,6 @@ def train_finetune(model, criterion, optimizer, scheduler, train_loader, epoch, 
         print("len(y_pred): ", len(y_pred))
         print("y_pred[0].shape: ", y_pred[0].shape)
 
-        assert False
-
-
-
-
-
 
 
     return

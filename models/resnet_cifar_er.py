@@ -43,7 +43,7 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes, nf, task_num=1, include_head=True, final_feat_sz=2):
+    def __init__(self, block, num_blocks, num_classes, nf, task_num=1, include_head=True, final_feat_sz=2, single_head=False, total_classes=None):
         super(ResNet, self).__init__()
         self.in_planes = nf
         self.include_head = include_head    
@@ -51,6 +51,8 @@ class ResNet(nn.Module):
         # self.im_sz = im_sz  
         self.emb_dim = nf * 8 * block.expansion * 4 
         self.final_feat_sz = final_feat_sz 
+
+        self.single_head = single_head
     
         self.conv1 = conv3x3(3, nf * 1)
         self.bn1 = nn.BatchNorm2d(nf * 1)
@@ -59,10 +61,23 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
 
-        if self.include_head:
-            self.heads = nn.ModuleList([nn.Linear(nf * 8 * block.expansion*4, num_classes) for _ in range(task_num)]) 
-        # else:
-        #     self.fc = nn.Linear(nf * 8 * block.expansion*4, num_classes)    
+        # if self.include_head:
+        #     self.heads = nn.ModuleList([nn.Linear(nf * 8 * block.expansion*4, num_classes) for _ in range(task_num)]) 
+        # # else:
+        # #     self.fc = nn.Linear(nf * 8 * block.expansion*4, num_classes)    
+
+        # Head の作成
+        if self.single_head:
+            assert total_classes is not None, "single_head=True requires total_classes"
+            self.fc = nn.Linear(self.emb_dim, total_classes, bias=True)
+            self.task_slices = []
+            self._cursor = 0
+            # 互換性のため、task_num 回ぶんのスライスを事前登録
+            for _ in range(task_num):
+                self.add_head(num_classes)
+        else:
+            if self.include_head:
+                self.heads = nn.ModuleList([nn.Linear(self.emb_dim, num_classes) for _ in range(task_num)])
       
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -73,8 +88,22 @@ class ResNet(nn.Module):
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
     
-    def add_head(self, num_classes):    
-        self.heads.append(nn.Linear(self.emb_dim, num_classes, bias=True))
+    # def add_head(self, num_classes):    
+    #     self.heads.append(nn.Linear(self.emb_dim, num_classes, bias=True))
+
+
+    def add_head(self, num_classes: int):
+        """マルチヘッド互換のAPI。single_head時はスライスのみ追加"""
+        if self.single_head:
+            start = self._cursor
+            end = start + int(num_classes)
+            self.task_slices.append(slice(start, end))
+            self._cursor = end
+        else:
+            if not hasattr(self, 'heads'):
+                self.heads = nn.ModuleList([])
+            self.heads.append(nn.Linear(self.emb_dim, num_classes, bias=True))
+
 
     def forward(self, x):
         # bsz = x.size(0)
@@ -86,18 +115,36 @@ class ResNet(nn.Module):
         out = adaptive_avg_pool2d(out, (self.final_feat_sz, self.final_feat_sz))
         out = out.reshape(out.size(0), -1)
 
-        if self.include_head:    
-            outs = []
-            for head in self.heads:
-                outs.append(head(out))
-        else:
-            # outs = self.fc(out)
-            outs = out
+        # features を out に計算済み
+        if self.include_head:
+            
+            if self.single_head:
+                logits = self.fc(out)
+                
+                if len(self.task_slices) == 0:
+                    
+                    # 初期状態のフォールバック（全クラス1ヘッド分）
+                    return [logits]
+                
+                # 各タスク相当のロジットをスライスして「リスト」で返す
+                return [logits[:, s] for s in self.task_slices]
+            
+            else:
+                return [head(out) for head in self.heads]
         
-        return outs
+        else:
+            return out
     
 
 
 def ResNet18(task_num, nclasses, nf=32, final_feat_sz=2, include_head=True, single_head=False, total_classes=None):
-    return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf, task_num=task_num, include_head=include_head,
-                  final_feat_sz=final_feat_sz)
+    
+    return ResNet(BasicBlock, 
+                  [2, 2, 2, 2], 
+                  nclasses, 
+                  nf, 
+                  task_num=task_num, 
+                  include_head=include_head,
+                  final_feat_sz=final_feat_sz,
+                  single_head=single_head,
+                  total_classes=total_classes)
