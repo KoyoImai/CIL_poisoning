@@ -15,7 +15,7 @@ from optimizers import make_optimizer, make_scheduler
 from augmentations import make_augmentation
 from datasets import set_buffer, make_dataset
 from dataloaders import make_dataloader
-from train import train
+from train import train, evaluation
 
 
 
@@ -50,20 +50,13 @@ def preparation(cfg):
 
 def save_model(model, optimizer, opt, epoch, save_file):
     print('==> Saving...'+save_file)
-    if opt.method in ["cclis-pcgrad"]:
-        state = {
+
+    state = {
         'opt': opt,
         'model': model.state_dict(),
-        'optimizer': optimizer._optim.state_dict(),
+        'optimizer': optimizer.state_dict(),
         'epoch': epoch,
     }
-    else:
-        state = {
-            'opt': opt,
-            'model': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'epoch': epoch,
-        }
     torch.save(state, save_file)
     del state
 
@@ -145,6 +138,9 @@ def main(cfg):
             # model, criterion, optimizer, scheduler, train_loader, epoch, cfg
             train(model=model, criterion=criterion, optimizer=optimizer,
                   scheduler=scheduler, train_loader=train_loader, epoch=epoch, cfg=cfg)
+            
+            evaluation(model=model, criterion=criterion, optimizer=optimizer,
+                       scheduler=scheduler, test_loader=test_loader, epoch=epoch, cfg=cfg)
 
             # 学習率の調整
             scheduler.step()

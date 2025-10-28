@@ -30,7 +30,7 @@ continual:
   n_task: 10
   cls_per_task: 10
   buffer_type: ring
-  buffer_size: 1000
+  buffer_size: 0
   target_task: null
 linear:
   dataset: imagenet21k

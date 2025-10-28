@@ -48,7 +48,7 @@ continual:
   n_task: 10
   cls_per_task: 10
   buffer_type: "ring"
-  buffer_size: 1000
+  buffer_size: 0
   target_task: 
 
 
@@ -67,6 +67,20 @@ linear:
     schedule: [60, 80]
     eta: 0.005
     cos: True
+
+
+inversion:
+  target_task: 0
+  task_list: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  save_dir: 
+
+
+poisoning:
+  type: "brainwash"
+  target_task: 0
+  delta: 0.3
+  batch_reg: True    # reg損失を使用するか
+
 
 
 
