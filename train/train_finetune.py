@@ -46,7 +46,7 @@ def train_finetune(model, criterion, optimizer, scheduler, train_loader, epoch, 
 
         # 損失計算
         loss = criterion(logits, labels, taskid)
-        losses.update(loss.item(), images[0].size(0))
+        losses.update(loss.item(), labels.shape[0])
 
         # 訓練精度の計算 
         y_pred = torch.cat(list(logits[:taskid+1]), dim=1)

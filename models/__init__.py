@@ -12,7 +12,6 @@ def make_model(cfg):
         # model  = BackboneResNet(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
 
         from models.resnet_cifar_er import ResNet18
-        # model  = ResNet18(task_num=cfg.continual.n_task, nclasses=cfg.dataset.num_classes)
         model  = ResNet18(task_num=cfg.continual.n_task, nclasses=cfg.continual.cls_per_task, include_head=True, total_classes=cfg.dataset.num_classes, single_head=True)
 
         print("model: ", model)

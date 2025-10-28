@@ -121,7 +121,7 @@ def main(cfg):
         # ===========================================
         # データローダーの作成
         # ===========================================
-        replay_indices = set_buffer(cfg=cfg, prev_indices=replay_indices)
+        replay_indices = set_buffer(cfg=cfg, model=model, prev_indices=replay_indices)
         train_augmentation, test_augmentation = make_augmentation(cfg)
         train_dataset, test_dataset = make_dataset(cfg=cfg, replay_indices=replay_indices,
                                                    train_augmentation=train_augmentation,

@@ -2,7 +2,7 @@
 
 hydra:
   run:
-    dir: outputs/er_debug
+    dir: outputs/er_baseline
     
 
 # 手法名
@@ -22,7 +22,7 @@ dataset:
   size: 32
   drop_last: True
   start_index: 0
-  sharding: "interleave"
+
 
 
 optimizer:
@@ -33,13 +33,13 @@ optimizer:
     eta: 0.005
     batch_size: 16
     start_epoch: 0
-    epochs: 20
+    epochs: 30
     scheduler_type: "cos"
     scheduler_exit_decay: 0
   
 scheduler:
   train:
-    milestones: [16]
+    milestones: [16, 25]
     gamma: 0.1
 
 
@@ -47,8 +47,8 @@ continual:
   n_cls: 100
   n_task: 10
   cls_per_task: 10
-  buffer_type: "minred"
-  buffer_size: 500
+  buffer_type: "ring"
+  buffer_size: 1000
   target_task: 
 
 
@@ -93,14 +93,14 @@ ddp:
 
 
 amp:
-  use_amp: True
+  use_amp: False
   dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
   grad_scaler: true    # bf16 のときは自動的に無視されます
 
 
 
 seed: 777
-date: 2025_1022
+date: 2025_1027
 workers: 64
 
 

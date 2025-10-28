@@ -1,5 +1,5 @@
 method:
-  name: er
+  name: finetune
 model:
   type: resnet18
 dataset:
@@ -9,7 +9,6 @@ dataset:
   size: 32
   drop_last: true
   start_index: 0
-  sharding: interleave
 optimizer:
   train:
     learning_rate: 0.01
@@ -18,7 +17,7 @@ optimizer:
     eta: 0.005
     batch_size: 16
     start_epoch: 0
-    epochs: 1
+    epochs: 20
     scheduler_type: cos
     scheduler_exit_decay: 0
 scheduler:
@@ -68,10 +67,10 @@ ddp:
   use_ddp: null
   world_size: null
 amp:
-  use_amp: true
+  use_amp: false
   dtype: fp16
   grad_scaler: true
 seed: 777
-date: 20251022
+date: 20251027
 workers: 64
 debug: false
