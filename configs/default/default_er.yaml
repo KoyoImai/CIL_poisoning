@@ -70,8 +70,11 @@ linear:
 
 
 inversion:
-  target_task: 0
-  task_list: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  target_task: 9    # 性能低下を狙うタスク
+  reg: True
+  task_list: [0, 1, 2, 3, 4, 5, 6, 7, 8]    # これまでに学習したタスクの一覧
+  num_samples: 1280
+  n_iters: 15000
   save_dir: 
 
 

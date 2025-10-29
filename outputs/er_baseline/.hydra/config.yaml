@@ -50,7 +50,8 @@ linear:
     eta: 0.005
     cos: true
 inversion:
-  target_task: 0
+  target_task: 9
+  reg: true
   task_list:
   - 0
   - 1
@@ -61,6 +62,8 @@ inversion:
   - 6
   - 7
   - 8
+  num_samples: 1280
+  n_iters: 15000
   save_dir: null
 log:
   name: null
